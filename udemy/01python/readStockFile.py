@@ -15,3 +15,8 @@ if os.path.exists(localZipFilePath):
         print "Extracted " + filename + "from zip file to " + (localExtractFilePath + "/" + filename)
     print "Total, we extracted ", str(len(listOfFiles)), " files "
     fh.close()
+
+#Open File
+#Setup File Handler
+#Process File contents
+#Close File
