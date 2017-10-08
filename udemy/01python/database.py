@@ -20,47 +20,87 @@ c.execute('CREATE TABLE prices (SYMBOL text, SERIES text, OPEN real, HIGH real, 
 conn.commit()
 
 def download(localZipFilePath,urlOfFileName):
-    # We already wrote the code for this bit in the drill on files. Lets just copy that over
-    # This bit of boiler plate code below is needed because the
-    # website of the National Stock Exchange tries to block automated
-    # programs (like this one!) from downloading files.
-    # This line is not needed with all websites, but there are a reasonable
-    # number that will block automated downloads, in which case the additional line below
-    # will circumvent the block.
     hdr = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.64 Safari/537.11',
            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
            'Accept-Charset': 'ISO-8859-1,utf-8;q=0.7,*;q=0.3',
            'Accept-Encoding': 'none',
            'Accept-Language': 'en-US,en;q=0.8',
            'Connection': 'keep-alive'}
-
-    # here below is the code that actually downloads the page and stores to file
-
-    # Make the web request - just as a web browser like Chrome or Mozilla would
-    # Note that we pass in the boilerplate code we just typed above
     webRequest = urllib2.request.Request(urlOfFileName, headers=hdr)
-
-    # Doing stuff with files is quite prone to errors in the disk or in the network
-    # connection, so use a try:/except: pair as safety net
     try:
-        # Make the web request
         page = urllib2.request.urlopen(webRequest)
-        # Save the contents of the web request in a variable called 'content'.
-        # These contents are literally the zip file from the URL (i.e. what you'd get
-        # if you downloaded the URL manually)
         content = page.read()
-        # Save the contents to the zip file on disk locally
-        # 1. open the barrel (file). The 'w' signifies that we intend to write, i.e
-        # put stuff into the barrel (file)
         output = open(localZipFilePath, "wb")
-        # 2. write contents to file, i.e. actually put stuff in the barrel
         output.write(bytearray(content))
-        # 3. close the barrel (i.e. the file)
         output.close()
-    # this bit below, the except: block is what will get executed if any of the lines above throw errors
     except(urllib2.request.HTTPError, e):
-        # print out exactly what error, if any, resulted
         print(e.fp.read())
-        # Let the user know that the download did not work, and that file needs to be manually downloaded
         print("Looks like the download did not go through. Please download manually \nFROM:" + urlOfFileName + "\nTO:" + localZipFilePath)
 
+def unzip(localZipFilePath, localExtractFilePath):
+    if os.path.exists(localZipFilePath):
+        print("Cool! " + localZipFilePath + " exists..proceeding")
+        listOfFiles = []
+        fh = open(localZipFilePath, 'rb')
+        zipFileHandler = zipfile.ZipFile(fh)
+        for name in zipFileHandler.namelist():
+            zipFileHandler.extract(name, localExtractFilePath)
+            listOfFiles.append(localExtractFilePath + name)
+            print("Extracted " + name + " from the zip file, and saved to " + (localExtractFilePath + name))
+        print("Extracted " + str(len(listOfFiles)) + " file in total")
+        fh.close()
+
+
+def downloadAndUnzipForPeriod(listOfMonths, listOfyears):
+    for year in listOfYears:
+        # indentation changes - we are inside the first for loop ( for the years)
+        for month in listOfMonths:
+            # indentation changes yet again - we are inside the second for loop ( for each  month in a given year)
+            for dayOfMonth in range(31) :
+                # indentation changes yet again - this is being executed for each day of each month of each year
+                # notice how we use the range(31) function to get a list with elements [0,1,2,....30]
+                date = dayOfMonth + 1
+                # lists are indexed from 0 but the dates start from 1, so add 1
+                ############################################################################
+                # OK the code that follows basically constructs a URL for the file
+                # as saved in the NSE website. How do we know how to construct this?
+                # Simply by manually downloading these files and examining the pattern for
+                # different dates/months/years.
+                # A typical URL looks like this : http://www.nseindia.com/content/historical/EQUITIES/2015/JUL/cm07JUL2015bhav.csv.zip
+                #############################################################################
+                # Convert number to string
+                dateStr = str(date)
+                # Note how single digit dates have a leading 0
+                if date < 10:
+                    # indentation shows we are inside the if condition
+                    dateStr = "0"+dateStr
+                    # tack on a leading zero
+                # indentation changes - we are out of the if loop
+                print(dateStr, "-", month,"-", year)
+                # Construct the filename
+                fileName = "cm" +str(dateStr) + str(month) + str(year) + "bhav.csv.zip"
+                # Construct the entire URL
+                urlOfFileName = "http://www.nseindia.com/content/historical/EQUITIES/"+ year +"/"+ month + "/" + fileName
+                # Construct the file on our local hard disk where we wish to save the downloaded file
+                # The file path would look different on Windows machines - something like "C:/Users/vitthal/PythonCodeExamples/"
+                localZipFilePath = "/Users/swethakolalapudi/PythonCodeExamples/" + fileName
+                # Make the call to the download function
+                download(localZipFilePath, urlOfFileName)
+                # MAke the call to the unzip function
+                unzip(localZipFilePath,localExtractFilePath)
+                # We want to make sure that we don't inadvertently overwhelm the NSE website
+                # so take a pause of 10 seconds to make sure we are not overloading it
+                time.sleep(10)
+                # done with all 3 for loops , the years, months and days
+    print("OK, all done downloading and extracting")
+
+#initialize a variable with a local directory in which to extract the
+# zip file above
+localExtractFilePath = "/Users/swethakolalapudi/PythonCodeExamples/"
+
+
+
+listOfMonths = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC']
+listOfYears = ['2014']
+
+downloadAndUnzipForPeriod(listOfMonths,listOfYears)
