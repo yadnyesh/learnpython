@@ -9,3 +9,9 @@ def functionThatModifiesNumber(someNumber):
 print "Value of variable before: ", someNumber
 functionThatModifiesNumber(someNumber)
 print "Value of variable after: ", someNumber
+
+def calculateAreaOfTheCircle(radius):
+    area = 3.14 * radius * radius
+    return area
+
+print calculateAreaOfTheCircle(5)
