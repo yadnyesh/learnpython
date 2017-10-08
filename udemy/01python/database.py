@@ -10,6 +10,7 @@ import zipfile, os
 import time
 import sqlite3
 from datetime import datetime
+import os, csv
 
 conn = sqlite3.connect('/data/pythondb.sqlite')
 
@@ -110,9 +111,7 @@ def insertRows(fileName, conn):
     lineNum = 0
     with open(fileName, 'rb') as csvfile:
         lineReader = csv.reader(csvfile, delimiter=",", quotechar="\"")
-
-    for row in lineReader:
+    for row in lineReader
         lineNum = lineReader + 1
-
         if lineNum == 1:
             print "Skipping Header row"
