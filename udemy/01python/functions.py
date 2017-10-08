@@ -15,3 +15,18 @@ def calculateAreaOfTheCircle(radius):
     return area
 
 print calculateAreaOfTheCircle(5)
+
+def calculateAreaAndCircumference(radiusList):
+    areaResultList = []
+    circumferenceResultList = []
+    resultHash = {'Areas': areaResultList, 'Circumferences' : circumferenceResultList}
+
+    for oneRadius in radiusList:
+        areaResultList.append(3.14 * oneRadius * oneRadius)
+        circumferenceResultList.append(3.14 * 2 * oneRadius)
+
+    return resultHash
+
+radiusList = [1,2,3,4]
+resultMap = calculateAreaAndCircumference(radiusList)
+print "For circles with radii = ", radiusList, "\nAreas = ", resultMap['Areas'], "\n Circumferences = ", resultMap['Circumferences']
